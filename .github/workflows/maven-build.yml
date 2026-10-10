@@ -1,0 +1,25 @@
+
+name: Maven Multi-Module Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build all Maven modules
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Check Java and Maven
+        run: |
+          java -version
+          mvn -version
+
+      - name: Build all modules
+        run: mvn clean install
