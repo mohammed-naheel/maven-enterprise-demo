@@ -1,5 +1,5 @@
 
-name: Maven Multi-Module Build
+name: Maven Build and Nginx Deploy
 
 on:
   push:
@@ -8,8 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build all Maven modules
+  build-and-deploy:
     runs-on: self-hosted
 
     steps:
@@ -21,5 +20,21 @@ jobs:
           java -version
           mvn -version
 
-      - name: Build all modules
+      - name: Build Maven project
         run: mvn clean install
+
+      - name: Verify website file
+        run: test -f app-module/src/main/resources/static/index.html
+
+      - name: Stage website
+        run: |
+          mkdir -p /tmp/maven-enterprise-site
+          cp app-module/src/main/resources/static/index.html /tmp/maven-enterprise-site/index.html
+
+      - name: Deploy website to Nginx
+        run: |
+          sudo /usr/local/bin/deploy-maven-site.sh /tmp/maven-enterprise-site/index.html
+
+      - name: Verify Nginx website
+        run: |
+          curl --fail -H "Host: myapp.local" http://localhost/
