@@ -2,41 +2,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maven Enterprise Demo</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 60px auto;
-            padding: 20px;
-            background: #f4f7fb;
-            color: #243247;
-        }
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px #0001;
-        }
-        h1 { color: #1769aa; }
-        li { margin: 12px 0; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maven Enterprise Portal</title>
+<style>
+:root {
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #172033;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #e0e7ff, #fdf2f8, #d1fae5);
+}
+button, input { font: inherit; }
+button { cursor: pointer; }
+.hidden { display: none !important; }
+
+.login-page {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    padding: 36px;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px #26345b20;
+}
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+.brand-icon {
+    width: 50px;
+    height: 50px;
+    display: grid;
+    place-items: center;
+    border-radius: 15px;
+    color: white;
+    font-size: 26px;
+    background: linear-gradient(135deg, #6366f1, #9333ea);
+}
+.brand h2 { margin: 0; font-size: 20px; }
+.brand p { margin: 5px 0 0; color: #64748b; font-size: 13px; }
+h1 { margin: 0 0 10px; font-size: 30px; }
+.subtitle { color: #64748b; line-height: 1.6; margin-bottom: 26px; }
+label { display: block; font-weight: 600; font-size: 14px; margin: 17px 0 8px; }
+input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #dbe1ed;
+    border-radius: 10px;
+    outline: none;
+}
+input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px #6366f120; }
+.primary {
+    border: 0;
+    color: white;
+    background: linear-gradient(100deg, #4f46e5, #9333ea);
+    border-radius: 10px;
+    padding: 14px;
+    width: 100%;
+    font-weight: 700;
+    margin-top: 24px;
+}
+.notice { color: #64748b; font-size: 12px; line-height: 1.5; margin-top: 18px; }
+
+.dashboard { max-width: 1100px; margin: auto; padding: 28px 22px 50px; }
+.topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 38px;
+}
+.topbar .brand { margin: 0; }
+.logout {
+    border: 1px solid #d7ddec; background: white;
+    padding: 10px 16px; border-radius: 10px; color: #334155;
+}
+.hero {
+    background: linear-gradient(120deg, #312e81, #6d28d9, #9333ea);
+    color: white; border-radius: 22px; padding: 32px;
+    margin-bottom: 30px; box-shadow: 0 12px 30px #4c1d9530;
+}
+.hero p { color: #e9d5ff; margin-bottom: 0; }
+.section-title { margin-bottom: 18px; }
+.modules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.module {
+    color: white; padding: 24px; border-radius: 18px;
+    min-height: 175px; box-shadow: 0 10px 24px #26345b16;
+    transition: transform .2s;
+}
+.module:hover { transform: translateY(-4px); }
+.module .symbol { font-size: 30px; }
+.module h3 { margin: 16px 0 8px; }
+.module p { margin: 0; font-size: 14px; line-height: 1.5; opacity: .9; }
+.blue { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+.green { background: linear-gradient(135deg, #059669, #047857); }
+.orange { background: linear-gradient(135deg, #f59e0b, #c2410c); }
+.purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.pink { background: linear-gradient(135deg, #ec4899, #be185d); }
+.footer { text-align: center; color: #64748b; margin-top: 30px; font-size: 13px; }
+
+@media (max-width: 760px) {
+    .modules { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .modules { grid-template-columns: 1fr; }
+    .login-card { padding: 25px; }
+    .hero { padding: 24px; }
+}
+</style>
 </head>
 <body>
-    <div class="card">
-        <h1>Maven Enterprise Demo</h1>
-        <p>Welcome to my five-module Maven project.</p>
-        <h2>Project Modules</h2>
-        <ul>
-            <li>Common Module</li>
-            <li>User Module</li>
-            <li>Product Module</li>
-            <li>Service Module</li>
-            <li>Application Module</li>
-        </ul>
-        <p>Status: Website ready for deployment.</p>
-    </div>
+
+<section id="loginPage" class="login-page">
+    <form id="loginForm" class="login-card">
+        <div class="brand">
+            <div class="brand-icon">✦</div>
+            <div>
+                <h2>Maven Enterprise</h2>
+                <p>Management Portal</p>
+            </div>
+        </div>
+
+        <h1>Welcome back!</h1>
+        <p class="subtitle">Sign in to explore your five enterprise modules.</p>
+
+        <label for="username">Username</label>
+        <input id="username" name="username" autocomplete="username"
+               placeholder="Enter your username" required>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password"
+               autocomplete="current-password" placeholder="Enter your password" required>
+
+        <button class="primary" type="submit">Sign In →</button>
+        <p class="notice">Demo interface only. This form does not authenticate users
+        or securely protect the dashboard.</p>
+    </form>
+</section>
+
+<main id="dashboard" class="dashboard hidden">
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">✦</div>
+            <div>
+                <h2>Maven Enterprise</h2>
+                <p>Management Portal</p>
+            </div>
+        </div>
+        <button id="logout" class="logout" type="button">Sign Out</button>
+    </header>
+
+    <section class="hero">
+        <h1>Welcome to your dashboard!</h1>
+        <p id="welcomeText">Your enterprise workspace is ready.</p>
+    </section>
+
+    <h2 class="section-title">Explore Your Modules</h2>
+
+    <section class="modules">
+        <article class="module blue">
+            <div class="symbol">◈</div>
+            <h3>Common Module</h3>
+            <p>Shared utilities and reusable components.</p>
+        </article>
+
+        <article class="module green">
+            <div class="symbol">♙</div>
+            <h3>User Module</h3>
+            <p>User information and user management.</p>
+        </article>
+
+        <article class="module orange">
+            <div class="symbol">▣</div>
+            <h3>Product Module</h3>
+            <p>Product details and catalog information.</p>
+        </article>
+
+        <article class="module purple">
+            <div class="symbol">⚙</div>
+            <h3>Service Module</h3>
+            <p>Business services and application logic.</p>
+        </article>
+
+        <article class="module pink">
+            <div class="symbol">▦</div>
+            <h3>Application Module</h3>
+            <p>Your main application and dashboard.</p>
+        </article>
+    </section>
+
+    <footer class="footer">Maven Enterprise Demo · Five-module project</footer>
+</main>
+
+<script>
+const loginPage = document.getElementById("loginPage");
+const dashboard = document.getElementById("dashboard");
+const loginForm = document.getElementById("loginForm");
+
+loginForm.addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!username || !password) return;
+
+    document.getElementById("welcomeText").textContent =
+        "Welcome, " + username + "! Your enterprise workspace is ready.";
+
+    loginPage.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+});
+
+document.getElementById("logout").addEventListener("click", function() {
+    loginForm.reset();
+    dashboard.classList.add("hidden");
+    loginPage.classList.remove("hidden");
+});
+</script>
+
 </body>
 </html>
