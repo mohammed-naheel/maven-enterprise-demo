@@ -1,40 +1,122 @@
 
-name: Maven Build and Nginx Deploy
+name: Maven Build, Nexus Publish and Nginx Deploy
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  build-and-deploy:
+  build-publish-deploy:
     runs-on: self-hosted
 
+    env:
+      NEXUS_URL: http://192.168.10.34:8082
+      NEXUS_REPOSITORY: maven-releases
+      ARTIFACT_ID: maven-enterprise-site
+
     steps:
-      - name: Checkout source code
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Check Java and Maven
+      - name: Check tools
         run: |
           java -version
           mvn -version
+          unzip -v | head -n 2
 
-      - name: Build Maven project
-        run: mvn clean install
+      - name: Build Maven project and website ZIP
+        run: mvn --batch-mode clean install
 
-      - name: Verify website file
-        run: test -f app-module/src/main/resources/static/index.html
+      - name: Generate unique artifact version
+        shell: bash
+        run: echo "SITE_VERSION=1.0.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
 
-      - name: Stage website
+      - name: Create temporary Maven settings
+        shell: bash
+        env:
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
         run: |
-          mkdir -p /tmp/maven-enterprise-site
-          cp app-module/src/main/resources/static/index.html /tmp/maven-enterprise-site/index.html
+          test -n "$NEXUS_USERNAME" || { echo "NEXUS_USERNAME secret missing"; exit 1; }
+          test -n "$NEXUS_PASSWORD" || { echo "NEXUS_PASSWORD secret missing"; exit 1; }
+
+          SETTINGS_FILE="$RUNNER_TEMP/nexus-settings.xml"
+          umask 077
+          cat > "$SETTINGS_FILE" <<EOF
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.2.0">
+            <servers>
+              <server>
+                <id>nexus-releases</id>
+                <username>${NEXUS_USERNAME}</username>
+                <password>${NEXUS_PASSWORD}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+          echo "MAVEN_SETTINGS=$SETTINGS_FILE" >> "$GITHUB_ENV"
+
+      - name: Publish website ZIP to Nexus
+        shell: bash
+        run: |
+          mvn --batch-mode --settings "$MAVEN_SETTINGS" \
+            org.apache.maven.plugins:maven-deploy-plugin:3.1.3:deploy-file \
+            -Dfile=app-module/target/maven-enterprise-site-1.0.0.zip \
+            -DgroupId=com.bayasys \
+            -DartifactId="$ARTIFACT_ID" \
+            -Dversion="$SITE_VERSION" \
+            -Dpackaging=zip \
+            -DgeneratePom=true \
+            -DrepositoryId=nexus-releases \
+            -Durl="$NEXUS_URL/repository/$NEXUS_REPOSITORY/"
+
+      - name: Download website ZIP from Nexus
+        shell: bash
+        env:
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        run: |
+          mkdir -p /tmp/maven-site-release
+          curl --fail --silent --show-error --location \
+            --user "$NEXUS_USERNAME:$NEXUS_PASSWORD" \
+            "$NEXUS_URL/repository/$NEXUS_REPOSITORY/com/bayasys/$ARTIFACT_ID/$SITE_VERSION/$ARTIFACT_ID-$SITE_VERSION.zip" \
+            --output /tmp/maven-site-release/site.zip
+          unzip -t /tmp/maven-site-release/site.zip
+
+      - name: Extract and validate website
+        shell: bash
+        run: |
+          rm -rf /tmp/maven-site-release/site
+          mkdir -p /tmp/maven-site-release/site
+          unzip -q /tmp/maven-site-release/site.zip -d /tmp/maven-site-release/site
+
+          for page in index.html \
+            modules/common.html \
+            modules/user.html \
+            modules/product.html \
+            modules/service.html \
+            modules/application.html; do
+            test -f "/tmp/maven-site-release/site/$page"
+          done
 
       - name: Deploy website to Nginx
         run: |
-          sudo /usr/local/bin/deploy-maven-site.sh /tmp/maven-enterprise-site/index.html
+          sudo -n /usr/local/bin/deploy-maven-site.sh /tmp/maven-site-release/site
 
-      - name: Verify Nginx website
+      - name: Verify website
+        shell: bash
         run: |
-          curl --fail -H "Host: myapp.local" http://localhost/
+          for page in index.html \
+            modules/common.html \
+            modules/user.html \
+            modules/product.html \
+            modules/service.html \
+            modules/application.html; do
+            curl --fail --silent --show-error \
+              -H "Host: myapp.local" \
+              "http://127.0.0.1/$page" -o /dev/null
+            echo "Verified: /$page"
+          done

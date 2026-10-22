@@ -5,19 +5,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Maven Enterprise Portal</title>
+
 <style>
 :root {
     font-family: "Segoe UI", Arial, sans-serif;
     color: #172033;
 }
 * { box-sizing: border-box; }
+
 body {
     margin: 0;
     min-height: 100vh;
     background: linear-gradient(135deg, #e0e7ff, #fdf2f8, #d1fae5);
 }
 button, input { font: inherit; }
-button { cursor: pointer; }
+button, a { cursor: pointer; }
 .hidden { display: none !important; }
 
 .login-page {
@@ -55,6 +57,7 @@ button { cursor: pointer; }
 h1 { margin: 0 0 10px; font-size: 30px; }
 .subtitle { color: #64748b; line-height: 1.6; margin-bottom: 26px; }
 label { display: block; font-weight: 600; font-size: 14px; margin: 17px 0 8px; }
+
 input {
     width: 100%;
     padding: 13px 14px;
@@ -62,7 +65,10 @@ input {
     border-radius: 10px;
     outline: none;
 }
-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px #6366f120; }
+input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px #6366f120;
+}
 .primary {
     border: 0;
     color: white;
@@ -75,42 +81,84 @@ input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px #6366f120; }
 }
 .notice { color: #64748b; font-size: 12px; line-height: 1.5; margin-top: 18px; }
 
-.dashboard { max-width: 1100px; margin: auto; padding: 28px 22px 50px; }
+.dashboard {
+    max-width: 1100px;
+    margin: auto;
+    padding: 28px 22px 50px;
+}
 .topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 16px; flex-wrap: wrap; margin-bottom: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 38px;
 }
 .topbar .brand { margin: 0; }
 .logout {
-    border: 1px solid #d7ddec; background: white;
-    padding: 10px 16px; border-radius: 10px; color: #334155;
+    border: 1px solid #d7ddec;
+    background: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    color: #334155;
 }
 .hero {
     background: linear-gradient(120deg, #312e81, #6d28d9, #9333ea);
-    color: white; border-radius: 22px; padding: 32px;
-    margin-bottom: 30px; box-shadow: 0 12px 30px #4c1d9530;
+    color: white;
+    border-radius: 22px;
+    padding: 32px;
+    margin-bottom: 30px;
+    box-shadow: 0 12px 30px #4c1d9530;
 }
 .hero p { color: #e9d5ff; margin-bottom: 0; }
 .section-title { margin-bottom: 18px; }
-.modules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-.module {
-    color: white; padding: 24px; border-radius: 18px;
-    min-height: 175px; box-shadow: 0 10px 24px #26345b16;
-    transition: transform .2s;
+
+.modules {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
 }
-.module:hover { transform: translateY(-4px); }
+.module {
+    display: block;
+    color: white;
+    padding: 24px;
+    border-radius: 18px;
+    min-height: 190px;
+    box-shadow: 0 10px 24px #26345b16;
+    transition: transform .2s, box-shadow .2s;
+    text-decoration: none;
+}
+.module:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 30px #26345b25;
+}
+.module:focus-visible {
+    outline: 3px solid #172033;
+    outline-offset: 4px;
+}
 .module .symbol { font-size: 30px; }
 .module h3 { margin: 16px 0 8px; }
-.module p { margin: 0; font-size: 14px; line-height: 1.5; opacity: .9; }
+.module p { margin: 0; font-size: 14px; line-height: 1.5; opacity: .95; }
+.module span {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 13px;
+    font-weight: 700;
+}
 .blue { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
 .green { background: linear-gradient(135deg, #059669, #047857); }
 .orange { background: linear-gradient(135deg, #f59e0b, #c2410c); }
 .purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
 .pink { background: linear-gradient(135deg, #ec4899, #be185d); }
-.footer { text-align: center; color: #64748b; margin-top: 30px; font-size: 13px; }
 
+.footer {
+    text-align: center;
+    color: #64748b;
+    margin-top: 30px;
+    font-size: 13px;
+}
 @media (max-width: 760px) {
-    .modules { grid-template-columns: repeat(2, 1fr); }
+    .modules { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 480px) {
     .modules { grid-template-columns: 1fr; }
@@ -119,8 +167,10 @@ input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px #6366f120; }
 }
 </style>
 </head>
+
 <body>
 
+<!-- LOGIN PAGE -->
 <section id="loginPage" class="login-page">
     <form id="loginForm" class="login-card">
         <div class="brand">
@@ -140,14 +190,19 @@ input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px #6366f120; }
 
         <label for="password">Password</label>
         <input id="password" name="password" type="password"
-               autocomplete="current-password" placeholder="Enter your password" required>
+               autocomplete="current-password"
+               placeholder="Enter your password" required>
 
         <button class="primary" type="submit">Sign In →</button>
-        <p class="notice">Demo interface only. This form does not authenticate users
-        or securely protect the dashboard.</p>
+
+        <p class="notice">
+            Demo interface only. This form does not authenticate users
+            or securely protect the dashboard.
+        </p>
     </form>
 </section>
 
+<!-- DASHBOARD -->
 <main id="dashboard" class="dashboard hidden">
     <header class="topbar">
         <div class="brand">
@@ -168,38 +223,45 @@ input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px #6366f120; }
     <h2 class="section-title">Explore Your Modules</h2>
 
     <section class="modules">
-        <article class="module blue">
+        <a class="module blue" href="/modules/common.html">
             <div class="symbol">◈</div>
             <h3>Common Module</h3>
             <p>Shared utilities and reusable components.</p>
-        </article>
+            <span>Open Module →</span>
+        </a>
 
-        <article class="module green">
+        <a class="module green" href="/modules/user.html">
             <div class="symbol">♙</div>
             <h3>User Module</h3>
             <p>User information and user management.</p>
-        </article>
+            <span>Open Module →</span>
+        </a>
 
-        <article class="module orange">
+        <a class="module orange" href="/modules/product.html">
             <div class="symbol">▣</div>
             <h3>Product Module</h3>
             <p>Product details and catalog information.</p>
-        </article>
+            <span>Open Module →</span>
+        </a>
 
-        <article class="module purple">
+        <a class="module purple" href="/modules/service.html">
             <div class="symbol">⚙</div>
             <h3>Service Module</h3>
             <p>Business services and application logic.</p>
-        </article>
+            <span>Open Module →</span>
+        </a>
 
-        <article class="module pink">
+        <a class="module pink" href="/modules/application.html">
             <div class="symbol">▦</div>
             <h3>Application Module</h3>
-            <p>Your main application and dashboard.</p>
-        </article>
+            <p>Your main application dashboard.</p>
+            <span>Open Module →</span>
+        </a>
     </section>
 
-    <footer class="footer">Maven Enterprise Demo · Five-module project</footer>
+    <footer class="footer">
+        Maven Enterprise Demo · Five-module project
+    </footer>
 </main>
 
 <script>
